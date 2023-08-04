@@ -1,35 +1,58 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Nov 18 13:07:51 2020
+from fastapi import FastAPI,UploadFile, File
+import pandas as pd
+from fastapi.middleware.cors import CORSMiddleware
+from app.models import CreditCard, Phone
+from app.utils import data_proccess_credit_card, data_proccess_phone_prices
+from PIL import Image
+from io import BytesIO
+import numpy as np
+import tensorflow as tf
 
-@author: win10
-"""
-#pip install fastapi uvicorn
-
-# 1. Library imports
-import uvicorn ##ASGI
-from fastapi import FastAPI
-
-# 2. Create the app object
 app = FastAPI()
 
-# 3. Index route, opens automatically on http://127.0.0.1:8000
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_methods=["*"],
+    allow_credentials = True,
+    allow_headers=["*"],
+)   
+
 @app.get('/')
-def index():
-    return {'message': 'Hello, World'}
+async def root():
+    return {"Alas Hackhaton":"Looosers"}
 
-# 4. Route with a single parameter, returns the parameter within a message
-#    Located at: http://127.0.0.1:8000/AnyNameHere
-@app.get('/Welcome')
-def get_name(name: str):
-    return {'Welcome To Krish Youtube Channel': f'{name}'}
+@app.post("/predict")
+async def predict(credit_card: CreditCard):
+    df = pd.DataFrame([credit_card.__dict__])
+    prediction = data_proccess_credit_card(df)
+    return {"prediction": str(prediction)}
+
+@app.post('/price')
+async def model2(data: Phone):
+    df = pd.DataFrame([data.__dict__])
+    prediction = data_proccess_phone_prices(df)
+    return {"prediction": str(prediction)}
+
+model = tf.keras.models.load_model('./models/model.h5')
 
 
+@app.post('/digits')
+async def upload(file: UploadFile = File(...)):
 
-# 5. Run the API with uvicorn
-#    Will run on http://127.0.0.1:8000
-if __name__ == '__main__':
-    uvicorn.run(app, host='127.0.0.1', port=8000)
-#uvicorn main:app --reload
+    try:
+        im = Image.open(BytesIO(await file.read()))
+        im = im.resize((227, 227))
+        im = im.convert("RGB")
+        im = np.array(im)
+        im = im.reshape((1, 227, 227, 3))
+        prediction = np.argmax(model.predict(im))
 
+        print(prediction)
 
+    except Exception:
+        return {"message": "There was an error uploading the file"}
+    finally:
+        file.file.close()
+
+    return {"prediction": str(prediction)}
