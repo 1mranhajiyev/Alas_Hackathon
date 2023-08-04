@@ -1,12 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
-from mobile_notes import MobileNotes
+from mobile_phone.mobile_notes import MobileNotes
 import numpy as np
 import pickle
 import pandas as pd
 
 import pickle
-from mobile_notes import MobileNotes
+from mobile_phone.mobile_notes import MobileNotes
 
 # 2. Create the app object
 app = FastAPI()
