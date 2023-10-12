@@ -29,31 +29,5 @@ The project requires the following software to be installed:
 - Python (version 3.7 or above)
 - Pip (Python package manager)
 
-### Installation
 
-1. Download or clone the project files:
-
-```bash
-git clone https://github.com/safaraliyevelmir/hackhaton_alas.git
-```
-
-2. Create Virtual Enviorement
-
-```bash
-python3 -m venv .venv
-```
-
-3. Install packages
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Run Fast api
-
-```bash
-uvicorn main:app --reload
-```
-
-5. Open Html File
 
